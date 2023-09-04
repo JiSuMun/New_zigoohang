@@ -2,10 +2,13 @@ asgiref==3.6.0
 attrs==23.1.0
 autobahn==23.1.2
 Automat==22.10.0
+black==23.7.0
 certifi==2023.5.7
 cffi==1.15.1
 channels==4.0.0
 charset-normalizer==3.1.0
+click==8.1.7
+colorama==0.4.6
 constantly==15.1.0
 cryptography==40.0.2
 daphne==4.0.0
@@ -26,13 +29,17 @@ hyperlink==21.0.0
 idna==3.4
 incremental==22.10.0
 MarkupPy==1.14
+mypy-extensions==1.0.0
 numpy==1.24.3
 oauthlib==3.2.2
 odfpy==1.4.1
 openpyxl==3.1.2
+packaging==23.1
 pandas==2.0.1
+pathspec==0.11.2
 pilkit==2.0
 Pillow==9.5.0
+platformdirs==3.10.0
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pycparser==2.21
@@ -50,7 +57,7 @@ six==1.16.0
 sqlparse==0.4.4
 tablib==3.4.0
 Twisted==22.10.0
-# twisted-iocpsupport==1.0.3
+twisted-iocpsupport==1.0.4
 txaio==23.1.1
 typing_extensions==4.6.2
 tzdata==2023.3

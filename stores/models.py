@@ -1,17 +1,18 @@
-from django.db import models
-from django.conf import settings
-from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
-from datetime import datetime, timedelta
-from django.db.models import Sum
 import os
+from datetime import datetime, timedelta
+
 from ckeditor_uploader.fields import RichTextUploadingField
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
 
 POINT_PER_PRICE = 0.01
+
 
 class Store(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -19,71 +20,104 @@ class Store(models.Model):
     content = models.CharField(max_length=255, null=True)
 
     def store_image_path(instance, filename):
-        return f'stores/{instance.name}/{filename}'
+        return f"stores/{instance.name}/{filename}"
+
     image = ProcessedImageField(upload_to=store_image_path, blank=True, null=True)
     main_image = ProcessedImageField(upload_to=store_image_path, blank=True, null=True)
 
     # delivery_fee = models.IntegerField()
 
     def __str__(self):
-        return f'{self.user.username}의 상점: {self.name}'
+        return f"{self.user.username}의 상점: {self.name}"
 
 
 class Product(models.Model):
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='products')
-    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_products', blank=True)
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="products")
+    like_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="like_products", blank=True
+    )
     name = models.CharField(max_length=255)
     content = RichTextUploadingField(blank=True, null=True)
     price = models.IntegerField()  # 상품가격
     rating = models.DecimalField(default=0, max_digits=5, decimal_places=1)
-    CATEGORY_CHOICES = [('미용', '미용'), ('의류', '의류'), ('잡화', '잡화'), ('기타', '기타')]
+    CATEGORY_CHOICES = [("미용", "미용"), ("의류", "의류"), ("잡화", "잡화"), ("기타", "기타")]
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
+
     def p_product_image_path(instance, filename):
-        return f'stores/{instance.store.name}/{instance.name}/{filename}'
-    detail_image = ProcessedImageField(upload_to=p_product_image_path, blank=True, null=True)
+        return f"stores/{instance.store.name}/{instance.name}/{filename}"
+
+    detail_image = ProcessedImageField(
+        upload_to=p_product_image_path, blank=True, null=True
+    )
 
     def __str__(self):
-        return f'{self.store.name} 상점의 {self.name}'
-    
+        return f"{self.store.name} 상점의 {self.name}"
+
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images"
+    )
+
     def product_image_path(instance, filename):
-        return f'stores/{instance.product.store.name}/{instance.product.name}/{filename}'
+        return (
+            f"stores/{instance.product.store.name}/{instance.product.name}/{filename}"
+        )
+
     image = ProcessedImageField(upload_to=product_image_path, blank=True, null=True)
 
 
-
 class ProductReview(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='p_reviews')
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="p_reviews"
+    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    content = RichTextUploadingField(blank=True,null=True)
-    rating = models.IntegerField(default=5, validators=[MinValueValidator(1), MaxValueValidator(5)])
+    content = RichTextUploadingField(blank=True, null=True)
+    rating = models.IntegerField(
+        default=5, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
 
     def product_review_image_path(instance, filename):
-        return f'stores/{instance.product.store.name}/{instance.product.name}/reviews/{filename}'
-    image1 = ProcessedImageField(upload_to=product_review_image_path, null=True, blank=True)
-    image2 = ProcessedImageField(upload_to=product_review_image_path, null=True, blank=True)
-    image3 = ProcessedImageField(upload_to=product_review_image_path, null=True, blank=True)
-    image4 = ProcessedImageField(upload_to=product_review_image_path, null=True, blank=True)
-    image5 = ProcessedImageField(upload_to=product_review_image_path, null=True, blank=True)
-    
+        return f"stores/{instance.product.store.name}/{instance.product.name}/reviews/{filename}"
+
+    image1 = ProcessedImageField(
+        upload_to=product_review_image_path, null=True, blank=True
+    )
+    image2 = ProcessedImageField(
+        upload_to=product_review_image_path, null=True, blank=True
+    )
+    image3 = ProcessedImageField(
+        upload_to=product_review_image_path, null=True, blank=True
+    )
+    image4 = ProcessedImageField(
+        upload_to=product_review_image_path, null=True, blank=True
+    )
+    image5 = ProcessedImageField(
+        upload_to=product_review_image_path, null=True, blank=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_p_reviews')
-    dislike_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='dislike_p_reviews')
+    like_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="like_p_reviews"
+    )
+    dislike_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="dislike_p_reviews"
+    )
 
     # @receiver(post_save)
     def save(self, *args, **kwargs):
-        self.product.rating = (self.product.rating*self.product.p_reviews.count() + self.rating) / (self.product.p_reviews.count() + 1)
+        self.product.rating = (
+            self.product.rating * self.product.p_reviews.count() + self.rating
+        ) / (self.product.p_reviews.count() + 1)
         self.product.save()
         super(ProductReview, self).save(*args, **kwargs)
 
+
 # class ProductReviewImage(models.Model):
 #     review = models.ForeignKey(ProductReview, on_delete=models.CASCADE, related_name='images')
-    
+
 #     def product_review_image_path(instance, filename):
 #         return f'stores/{instance.product.store.name}/{instance.product.name}/{instance.pk}/{filename}'
 #     image = ProcessedImageField(upload_to=product_image_path, blank=True, null=True)
@@ -122,7 +156,7 @@ class ProductReview(models.Model):
 #         default='배송준비중'
 #     ) # 배송 상태
 #     tracking_number = models.CharField(max_length=20, blank=True, null=True) # 운송장 번호 # 배송중상태가 되면 값 입력(ex. order.pk)
-    
+
 #     added_at = models.DateField(auto_now_add=True)
 
 #     def __str__(self):
@@ -134,14 +168,14 @@ class ProductReview(models.Model):
 #         for item in self.order_items.all():
 #             total += item.sub_total()
 #         return total
-    
+
 #     # 구매를 하게 되면 구매금액의 일정비율이 포인트로 추가
 #     def save(self, *args, **kwargs):
 #         super().save(*args, **kwargs)
 #         points = self.quantity * POINT_PER_PRICE
 #         self.user.points += points
 #         self.user.save()
-    
+
 #     @classmethod
 #     def get_total_sales_per_day(cls, seller, date):
 #         total_sales = cls.objects.filter(seller=seller, added_at__date=date).aggregate(total_sales=Sum('total'))
@@ -156,7 +190,6 @@ class ProductReview(models.Model):
 #     def get_total_purchase_per_month(cls, customer, year, month):
 #         total_purchase = cls.objects.filter(customer=customer, added_at__year=year, added_at__month=month).aggregate(total_purchase=Sum('total'))
 #         return total_purchase['total_purchase'] or 0
-
 
 
 # class OrderItem(models.Model):
@@ -205,8 +238,6 @@ class ProductReview(models.Model):
 #     shipping_status = models.ForeignKey(ShippingStatus, on_delete=models.CASCADE)
 
 
-
-
 # class Purchase(models.Model):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 #     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -228,7 +259,7 @@ class ProductReview(models.Model):
 #     def cleanup_old_purchases():
 #         six_months_ago = datetime.now() - timedelta(days=180)
 #         Purchase.objects.filter(date__lt=six_months_ago).delete()
-    
+
 #     # 월별 구매금액
 #     @classmethod
 #     def get_monthly_purchase_amount(cls, year, month):

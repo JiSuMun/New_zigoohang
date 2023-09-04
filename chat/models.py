@@ -1,11 +1,11 @@
-from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.utils import timezone
 
 
 class ChatRoom(models.Model):
-    participants = models.ManyToManyField(get_user_model(), related_name='chat_rooms')
+    participants = models.ManyToManyField(get_user_model(), related_name="chat_rooms")
     name = models.CharField(max_length=255, blank=True)
 
     @classmethod
@@ -29,7 +29,9 @@ class ChatRoom(models.Model):
 
 
 class Message(models.Model):
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    chat_room = models.ForeignKey(
+        ChatRoom, on_delete=models.CASCADE, related_name="messages"
+    )
     sender = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -42,22 +44,29 @@ class Message(models.Model):
 
     def formatted_timestamp(self):
         # self.timestamp에 대해 시간대 정보를 추가합니다.
-        if self.timestamp.tzinfo is None or self.timestamp.tzinfo.utcoffset(self.timestamp) is None:
-            local_timestamp = timezone.make_aware(self.timestamp, timezone.get_default_timezone())
+        if (
+            self.timestamp.tzinfo is None
+            or self.timestamp.tzinfo.utcoffset(self.timestamp) is None
+        ):
+            local_timestamp = timezone.make_aware(
+                self.timestamp, timezone.get_default_timezone()
+            )
         else:
             local_timestamp = self.timestamp
 
-        am_pm = "오전" if local_timestamp.strftime('%p') == "AM" else "오후"
+        am_pm = "오전" if local_timestamp.strftime("%p") == "AM" else "오후"
         return f"{am_pm} {local_timestamp.strftime('%I:%M')}"
-    
+
 
 class Notification(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='notifications')
+    chat_room = models.ForeignKey(
+        ChatRoom, on_delete=models.CASCADE, related_name="notifications"
+    )
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    
+
     def mark_as_read(self):
         if not self.is_read:
             self.is_read = True
@@ -65,14 +74,18 @@ class Notification(models.Model):
 
     def formatted_timestamp(self):
         # self.timestamp에 대해 시간대 정보를 추가합니다.
-        if self.timestamp.tzinfo is None or self.timestamp.tzinfo.utcoffset(self.timestamp) is None:
-            local_timestamp = timezone.make_aware(self.timestamp, timezone.get_default_timezone())
+        if (
+            self.timestamp.tzinfo is None
+            or self.timestamp.tzinfo.utcoffset(self.timestamp) is None
+        ):
+            local_timestamp = timezone.make_aware(
+                self.timestamp, timezone.get_default_timezone()
+            )
         else:
             local_timestamp = self.timestamp
 
-        am_pm = "오전" if local_timestamp.strftime('%p') == "AM" else "오후"
+        am_pm = "오전" if local_timestamp.strftime("%p") == "AM" else "오후"
         return f"{am_pm} {local_timestamp.strftime('%I:%M')}"
-
 
     @classmethod
     def delete_old_notifications(cls):

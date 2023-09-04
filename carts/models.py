@@ -1,14 +1,16 @@
-from django.db import models
 from django.conf import settings
-from stores.models import Product
+from django.db import models
 from django.db.models import Sum
 
+from stores.models import Product
 
 POINT_PER_PRICE = 0.01
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart"
+    )
 
     def __str__(self):
         return f"{self.user.username}'의 장바구니"
@@ -19,36 +21,45 @@ class Cart(models.Model):
             total += item.sub_total()
         return total
 
+
 class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cartitems')
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cartitems")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
     def sub_total(self):
         return self.product.price * self.quantity
-    
+
 
 class Order(models.Model):
-    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders_as_seller')
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders_as_customer')
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders_as_seller",
+    )
+    customer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders_as_customer",
+    )
     # product = models.ForeignKey(Product, on_delete=models.CASCADE)
     # amount = models.IntegerField()
     # quantity = models.IntegerField()
     STATUS_CHOICES = (
-        ('결제전', '결제전'),
-        ('배송준비중', '배송준비중'),
-        ('배송중', '배송중'),
-        ('배송완료', '배송완료'),
-        ('취소됨', '취소됨'),
-        ('반송중', '반송중'),
+        ("결제전", "결제전"),
+        ("배송준비중", "배송준비중"),
+        ("배송중", "배송중"),
+        ("배송완료", "배송완료"),
+        ("취소됨", "취소됨"),
+        ("반송중", "반송중"),
     )
     shipping_status = models.CharField(
-        max_length=15,
-        choices=STATUS_CHOICES,
-        default='결제전'
-    ) # 배송 상태
-    tracking_number = models.CharField(max_length=20, blank=True, null=True) # 운송장 번호 # 배송중상태가 되면 값 입력(ex. order.pk)
-    
+        max_length=15, choices=STATUS_CHOICES, default="결제전"
+    )  # 배송 상태
+    tracking_number = models.CharField(
+        max_length=20, blank=True, null=True
+    )  # 운송장 번호 # 배송중상태가 되면 값 입력(ex. order.pk)
+
     pay_type = models.CharField(max_length=20, blank=True, null=True)
     postcode = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=100, blank=True, null=True)
@@ -71,7 +82,7 @@ class Order(models.Model):
         for item in self.order_items.all():
             total += item.sub_total()
         return total
-    
+
     # 구매를 하게 되면 구매금액의 일정비율이 포인트로 추가
     # 배송상태를 바꿀 때 마다 save를 하기때문에 문제발생 > payment에서 처리
     # def save(self, *args, **kwargs):
@@ -79,28 +90,35 @@ class Order(models.Model):
     #     points = self.total() * POINT_PER_PRICE
     #     self.customer.points += points
     #     self.customer.save()
-    
+
     @classmethod
     def get_total_sales_per_day(cls, seller, date):
-        total_sales = cls.objects.filter(seller=seller, added_at__date=date).aggregate(total_sales=Sum('total'))
-        return total_sales['total_sales'] or 0
+        total_sales = cls.objects.filter(seller=seller, added_at__date=date).aggregate(
+            total_sales=Sum("total")
+        )
+        return total_sales["total_sales"] or 0
 
     @classmethod
     def get_total_sales_per_month(cls, seller, year, month):
-        total_sales = cls.objects.filter(seller=seller, added_at__year=year, added_at__month=month).aggregate(total_sales=Sum('total'))
-        return total_sales['total_sales'] or 0
+        total_sales = cls.objects.filter(
+            seller=seller, added_at__year=year, added_at__month=month
+        ).aggregate(total_sales=Sum("total"))
+        return total_sales["total_sales"] or 0
 
     @classmethod
     def get_total_purchase_per_month(cls, customer, year, month):
-        total_purchase = cls.objects.filter(customer=customer, added_at__year=year, added_at__month=month).aggregate(total_purchase=Sum('total'))
-        return total_purchase['total_purchase'] or 0
-
+        total_purchase = cls.objects.filter(
+            customer=customer, added_at__year=year, added_at__month=month
+        ).aggregate(total_purchase=Sum("total"))
+        return total_purchase["total_purchase"] or 0
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE) # 상품 pk
-    quantity = models.IntegerField() # 상품 개수
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="order_items"
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)  # 상품 pk
+    quantity = models.IntegerField()  # 상품 개수
 
     # 주문 item별 금액
     def sub_total(self):

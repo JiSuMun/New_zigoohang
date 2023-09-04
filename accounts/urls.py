@@ -1,10 +1,8 @@
-from django.urls import path, include
-from . import views
 from django.contrib.auth.views import LoginView
+from django.urls import include, path
+
+from . import views
 from .views import SignupView
-
-
-
 
 app_name = "accounts"
 urlpatterns = [
