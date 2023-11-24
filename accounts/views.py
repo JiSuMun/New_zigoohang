@@ -41,12 +41,21 @@ from .models import PointLog, PointLogItem
 
 
 class CustomLoginView(LoginView):
+    """
+    login 함수
+    """
+
     def form_invalid(self, form):
+        """
+        유효성 불통과 시 호출
+        """
         return JsonResponse({"status": "error", "message": "아이디, 비밀번호를 다시 확인해주세요."})
 
     def form_valid(self, form):
+        """
+        유효성 통과 시 호출
+        """
         # 로그인 작업 완료
-        # login(self.request, form.get_user())
         auth_login(self.request, form.get_user())
 
         cart_data = self.request.POST.get("cart_data")
@@ -77,7 +86,6 @@ class CustomLoginView(LoginView):
                 cart_item.save()
 
         # 로그인 한 사용자의 프로필로 리디렉션
-        # return HttpResponseRedirect(self.get_success_url())
         return JsonResponse(
             {"status": "success", "redirect_url": self.get_success_url()}
         )
@@ -86,9 +94,8 @@ class CustomLoginView(LoginView):
 def login(request):
     if request.user.is_authenticated:
         return redirect("main")
-    # print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', request.body)
+
     if request.method == "POST":
-        # jsonObj =
         form = CustomAuthentication(request, request.POST)
         if form.is_valid():
             user = form.get_user()
