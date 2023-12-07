@@ -272,6 +272,9 @@ def delete(request):
 
 @login_required
 def update(request):
+    """
+    개인정보 수정 함수
+    """
     if request.method == "POST":
         form = CustomUserChangeForm(
             request.POST, files=request.FILES, instance=request.user
@@ -290,6 +293,9 @@ def update(request):
 
 @login_required
 def change_password(request):
+    """
+    비밀번호 변경 함수
+    """
     if request.method == "POST":
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -309,6 +315,9 @@ User = get_user_model()
 
 
 def find_user_id(request):
+    """
+    아이디 찾기 함수
+    """
     if request.method == "POST":
         form = FindUserIDForm(request.POST)
         if form.is_valid():
@@ -331,6 +340,9 @@ def find_user_id(request):
 
 
 def password_reset_request(request):
+    """
+    비밀번호 재설정 함수
+    """
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
         if form.is_valid():
