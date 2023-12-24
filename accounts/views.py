@@ -42,7 +42,7 @@ from .models import PointLog, PointLogItem
 
 class CustomLoginView(LoginView):
     """
-    login 함수
+    login 뷰
     """
 
     def form_invalid(self, form):
@@ -91,7 +91,12 @@ class CustomLoginView(LoginView):
         )
 
 
+"""
+# 현재 비사용중
+
 def login(request):
+
+    print("login 사용 - 2번")
     if request.user.is_authenticated:
         return redirect("main")
 
@@ -122,17 +127,25 @@ def login(request):
     context = {
         "form": form,
     }
+
     return render(request, "accounts/login.html", context)
+"""
 
 
 @login_required
 def logout(request):
+    """
+    logout 함수
+    """
     if request.user.is_authenticated:
         auth_logout(request)
     return redirect("main")
 
 
 class SignupView(View):
+    """
+    signup 뷰
+    """
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect("main")
@@ -221,6 +234,9 @@ class SignupView(View):
 
 
 def activate(request, uidb64, token):
+    """
+    사용자 계정 활성화 요청 처리하는 함수
+    """
     User = get_user_model()
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
